@@ -21,18 +21,29 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
+        if (!SteeringEnabled) return;
+
         playerRigidbody.AddForce(Vector3.forward * forwardForce * Time.fixedDeltaTime);
 
-        if (SteeringEnabled && SystemInfo.supportsGyroscope && Input.gyro.enabled)
+        float horizontalAxis = 0;
+        if (SystemInfo.supportsGyroscope && Input.gyro.enabled)
         {
-            float horizontalAxis = Input.gyro.rotationRateUnbiased.y * gyroSensitivity;
+            horizontalAxis = Input.gyro.rotationRateUnbiased.y * gyroSensitivity;
             playerRigidbody.AddForce(Vector3.right * horizontalAxis * sidewaysForce * Time.fixedDeltaTime);
+        }
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            
+            float touchPosX = touch.deltaPosition.x / Screen.width;
+            horizontalAxis = (touchPosX < 0.5f) ? -1f : 1f;
         }
         else
         {
-            float horizontalAxis = Input.GetAxis("Horizontal");
-            playerRigidbody.AddForce(Vector3.right * horizontalAxis * sidewaysForce * Time.fixedDeltaTime);
+            horizontalAxis = Input.GetAxis("Horizontal");
         }
+
+        playerRigidbody.AddForce(Vector3.right * horizontalAxis * sidewaysForce * Time.fixedDeltaTime);
     }
 
     private void HandleFall()
